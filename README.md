@@ -43,3 +43,8 @@ npm run dev
 
 If you need Realtime Database support instead of Firestore, update `src/firebase.ts` and the `Leaderboard` query accordingly.
 
+PWA & Preview caching note:
+- If you use `npm run preview` to serve the build, the service worker (from the PWA plugin) may serve a cached version of the app file assets and show an older version of your site.
+- To force the new build to appear in preview, either: open the preview in an incognito window (which bypasses previously installed SW), or open DevTools → Application → Service Workers and `Unregister` any active service worker and clear site data (Storage → Clear site data).
+- After that, reload the page to see the latest build.
+

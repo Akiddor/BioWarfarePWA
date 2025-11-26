@@ -81,11 +81,21 @@ export default function Leaderboard() {
     return () => unsubscribe();
   }, []);
 
+  // Simple production/dev check for Firebase configuration to help debug preview builds
+  const firebaseConfigured = Boolean(
+    import.meta.env.VITE_FIREBASE_API_KEY && import.meta.env.VITE_FIREBASE_PROJECT_ID
+  );
+
   // The leaderboard does not allow adding scores from the web UI — scores should be written by the game.
 
   return (
     <section id="leaderboard" className="container mx-auto px-4 py-12">
       <div className="bg-neutral-900 rounded-lg border border-green-900/30 p-6 shadow-lg">
+        {!firebaseConfigured && (
+          <div className="mb-4 p-3 bg-red-900/30 border border-red-900 rounded text-red-200">
+            <strong>Firebase no configurado:</strong> Asegura que tienes un archivo <code>.env.local</code> con las variables <code>VITE_FIREBASE_*</code> antes de ejecutar <code>npm run build</code>. Si ya las añadiste, vuelve a ejecutar <code>npm run build</code> y <code>npm run preview</code>.
+          </div>
+        )}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-white">Tabla de puntuaciones</h2>
           <span className="text-sm text-green-200 bg-green-900/20 px-3 py-1 rounded-full">Top 10</span>
