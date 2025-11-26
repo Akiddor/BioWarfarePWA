@@ -48,3 +48,7 @@ PWA & Preview caching note:
 - To force the new build to appear in preview, either: open the preview in an incognito window (which bypasses previously installed SW), or open DevTools → Application → Service Workers and `Unregister` any active service worker and clear site data (Storage → Clear site data).
 - After that, reload the page to see the latest build.
 
+Offline caching for the Leaderboard:
+- The Leaderboard caches the top 10 scores locally (in the browser's localStorage) and also uses Firestore's IndexedDB persistence when available. This allows the leaderboard to display the last known scores even when the device is offline.
+- When offline the UI shows a banner telling the user they are offline and displays the last cached data. When the app regains connection, the scores will be updated from Firestore in real-time.
+

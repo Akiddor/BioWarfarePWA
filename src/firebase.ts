@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 
 // Read Firebase config from environment vars (Vite requires VITE_ prefix)
@@ -34,6 +34,20 @@ try {
 
 export const db = getFirestore(app);
 export { analytics };
+
+// Try enabling offline persistence for Firestore (IndexedDB) — works in most modern browsers.
+let persistenceEnabled = false;
+try {
+  // enable persistence; if multiple tabs are open this may fail with 'failed-precondition'
+  enableIndexedDbPersistence(db);
+  persistenceEnabled = true;
+  console.log('Firestore IndexedDB persistence enabled.');
+} catch (err: any) {
+  // eslint-disable-next-line no-console
+  console.warn('Could not enable IndexedDB persistence for Firestore:', err?.code || err?.message || err);
+}
+
+export { persistenceEnabled };
 
 // Note: If you're using Realtime Database instead of Firestore, export getDatabase(app) from
 // firebase/database and adapt the Leaderboard component accordingly.

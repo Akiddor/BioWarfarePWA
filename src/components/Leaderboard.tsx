@@ -14,6 +14,8 @@ export default function Leaderboard() {
   const [scores, setScores] = useState<Score[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [lastCachedAt, setLastCachedAt] = useState<number | null>(null);
   
   const collectionName = (import.meta.env.VITE_FIRESTORE_COLLECTION as string) ?? 'leaderboard';
   // Only enemies/time needed for the simplified leaderboard
@@ -27,6 +29,32 @@ export default function Leaderboard() {
 
     const scoresRef = collection(db, collectionName);
     const q = query(scoresRef, orderBy(sortField, 'desc'), limit(10));
+
+    // Helper to save to local cache
+    const cacheKey = 'biowarfare_leaderboard_cache_v1';
+    function saveCacheData(list: Score[]) {
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), scores: list }));
+        setLastCachedAt(Date.now());
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Load cached data (synchronously) so that if user is offline, we display it immediately
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.scores && Array.isArray(parsed.scores)) {
+          setScores(parsed.scores as Score[]);
+          setLastCachedAt(parsed.ts || null);
+          setLoading(false);
+        }
+      }
+    } catch (err) {
+      // ignore parse errors
+    }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const list: Score[] = snapshot.docs.map((doc) => {
@@ -45,6 +73,7 @@ export default function Leaderboard() {
       });
 
       setScores(list);
+      saveCacheData(list);
       setLoading(false);
     }, (err) => {
       console.error('Realtime leaderboard error', err);
@@ -71,6 +100,7 @@ export default function Leaderboard() {
             };
           });
           setScores(list);
+          saveCacheData(list);
           setLoading(false);
         }
       })
@@ -79,6 +109,21 @@ export default function Leaderboard() {
       });
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    function handleOnline() {
+      setIsOnline(true);
+    }
+    function handleOffline() {
+      setIsOnline(false);
+    }
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   // Simple production/dev check for Firebase configuration to help debug preview builds
@@ -91,6 +136,17 @@ export default function Leaderboard() {
   return (
     <section id="leaderboard" className="container mx-auto px-4 py-12">
       <div className="bg-neutral-900 rounded-lg border border-green-900/30 p-6 shadow-lg">
+        {/* Offline banner: show when offline or showing cached data */}
+        {!isOnline && (
+          <div className="mb-4 p-3 bg-yellow-900/20 border border-yellow-900 rounded text-yellow-200">
+            <strong>Sin conexión:</strong> Estás sin internet; se muestran los datos almacenados localmente. Conéctate para ver resultados en tiempo real.
+          </div>
+        )}
+        {isOnline && lastCachedAt && (
+          <div className="mb-4 p-2 bg-black/10 rounded text-gray-300 text-sm">
+            Última sincronización: {new Date(lastCachedAt).toLocaleString()}
+          </div>
+        )}
         {!firebaseConfigured && (
           <div className="mb-4 p-3 bg-red-900/30 border border-red-900 rounded text-red-200">
             <strong>Firebase no configurado:</strong> Asegura que tienes un archivo <code>.env.local</code> con las variables <code>VITE_FIREBASE_*</code> antes de ejecutar <code>npm run build</code>. Si ya las añadiste, vuelve a ejecutar <code>npm run build</code> y <code>npm run preview</code>.
