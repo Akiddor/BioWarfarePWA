@@ -15,14 +15,10 @@ export default function Footer() {
             y la importancia de la prevención y la higiene.
           </p>
 
-          <div className="flex items-center gap-2 text-gray-500">
-            <span>Hecho con</span>
-            <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-            <span>para los amantes del survival horror</span>
-          </div>
+          
 
           <div className="text-gray-600 text-sm">
-            © 2025 Bio Warfare. Rifle, Texas - 2027.
+            © 2025 Bio Warfare 
           </div>
         </div>
       </div>

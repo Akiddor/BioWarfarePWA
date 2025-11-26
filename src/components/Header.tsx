@@ -49,6 +49,11 @@ export default function Header() {
                 Características
               </button>
             </li>
+            <li>
+              <button onClick={() => scrollToSection('leaderboard')} className="text-gray-300 hover:text-green-500 transition-colors">
+                Tabla
+              </button>
+            </li>
           </ul>
         </div>
 
@@ -72,6 +77,11 @@ export default function Header() {
             <li>
               <button onClick={() => scrollToSection('features')} className="block w-full text-left text-gray-300 hover:text-green-500 transition-colors">
                 Características
+              </button>
+            </li>
+            <li>
+              <button onClick={() => scrollToSection('leaderboard')} className="block w-full text-left text-gray-300 hover:text-green-500 transition-colors">
+                Tabla
               </button>
             </li>
           </ul>
